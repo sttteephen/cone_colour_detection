@@ -1,3 +1,5 @@
+# for creating a dataset of just cone images from fsoco dataset
+
 import os
 import json
 import cv2
