@@ -8,28 +8,28 @@ import pandas as pd
 
 cap = cv2.VideoCapture("video.mp4")
 
-model = torch.hub.load("ultralytics/yolov5", "custom", "best.pt")
-model.agnostic = True
+yolo_model = torch.hub.load("ultralytics/yolov5", "custom", "best.pt")
+yolo_model.agnostic = True
 # print(model.conf, model.iou, model.agnostic, model.multi_label)  # NMS settings
 
 colour_model = keras.models.load_model(
     "/Users/stephenmesser/Desktop/FS-AI/cone_colour_detection/cones_model5050_stri55.keras"
 )
 
-# print(dir(model))
-
 while True:
     start = time.time()
+
     # get video frame by frame
     ret, frame = cap.read()
+    frame = frame[
+        int(frame.shape[0] / 2) : int(frame.shape[0]) - 100,
+        75 : int(frame.shape[1]) - 75,
+    ]
 
-    frame = frame[int(frame.shape[0] / 2) : int(frame.shape[0])]
-
-    # do detection and get pandas data frame of results
-    results = model(frame)
+    # do yolo detection and get pandas data frame of results
+    results = yolo_model(frame)
     resultspd = results.pandas().xyxy[0]
 
-    # print(resultspd)
     # resultspd columns: [0] xmin, [1] ymin, [2] xmax, [3] ymax, [4] confidence, [5] class, [6] name
 
     # loop over results
@@ -43,11 +43,10 @@ while True:
         cone = cv2.resize(cone, dsize=(50, 50))
         cone_arr = [cone]
 
+        # get cone colour from nn
         colour_prediction = colour_model.predict(np.asarray(cone_arr)).argmax()
         # colour_prediction = int(resultspd.loc[i][5])
-
         colour = (0, 0, 0)
-        # choose colour
         if colour_prediction == 0:
             colour = (255, 190, 0)  # blue
         elif colour_prediction == 1:
@@ -57,13 +56,12 @@ while True:
         elif colour_prediction == 3:
             colour = (0, 0, 255)  # large orange
 
-        # print(resultspd.loc[i][4])
         frame = cv2.rectangle(
             frame,
             (x1, y1),
             (x2, y2),
             colour,
-            2,
+            1,
         )
 
     cv2.imshow("frame", frame)
