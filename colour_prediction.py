@@ -13,7 +13,7 @@ yolo_model.agnostic = True
 # print(model.conf, model.iou, model.agnostic, model.multi_label)  # NMS settings
 
 colour_model = keras.models.load_model(
-    "/Users/stephenmesser/Desktop/FS-AI/cone_colour_detection/cones_model5050_stri55.keras"
+    "/Users/stephenmesser/Desktop/FS-AI/cone_colour_detection/cones_modelreal_small.keras"
 )
 
 while True:
@@ -40,7 +40,7 @@ while True:
         y2 = round(resultspd.loc[i][3])
 
         cone = frame[y1:y2, x1:x2]
-        cone = cv2.resize(cone, dsize=(50, 50))
+        cone = cv2.resize(cone, dsize=(25, 25))
         cone_arr = [cone]
 
         # get cone colour from nn
