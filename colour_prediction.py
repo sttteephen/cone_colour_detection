@@ -6,7 +6,7 @@ import time
 import numpy as np
 import pandas as pd
 
-cap = cv2.VideoCapture("video.mp4")
+cap = cv2.VideoCapture(0)
 
 yolo_model = torch.hub.load("ultralytics/yolov5", "custom", "best.pt")
 yolo_model.agnostic = True
@@ -40,29 +40,30 @@ while True:
         y2 = round(resultspd.loc[i][3])
 
         cone = frame[y1:y2, x1:x2]
-        cone = cv2.resize(cone, dsize=(25, 25))
-        cone_arr = [cone]
+        if cone.shape[0] > 10:
+            cone = cv2.resize(cone, dsize=(25, 25))
+            cone_arr = [cone]
 
-        # get cone colour from nn
-        colour_prediction = colour_model.predict(np.asarray(cone_arr)).argmax()
-        # colour_prediction = int(resultspd.loc[i][5])
-        colour = (0, 0, 0)
-        if colour_prediction == 0:
-            colour = (255, 190, 0)  # blue
-        elif colour_prediction == 1:
-            colour = (0, 255, 255)  # yellow
-        elif colour_prediction == 2:
-            colour = (0, 117, 255)  # orage
-        elif colour_prediction == 3:
-            colour = (0, 0, 255)  # large orange
+            # get cone colour from nn
+            colour_prediction = colour_model.predict(np.asarray(cone_arr)).argmax()
+            # colour_prediction = int(resultspd.loc[i][5])
+            colour = (0, 0, 0)
+            if colour_prediction == 0:
+                colour = (255, 190, 0)  # blue
+            elif colour_prediction == 1:
+                colour = (0, 255, 255)  # yellow
+            elif colour_prediction == 2:
+                colour = (0, 117, 255)  # orage
+            elif colour_prediction == 3:
+                colour = (0, 0, 255)  # large orange
 
-        frame = cv2.rectangle(
-            frame,
-            (x1, y1),
-            (x2, y2),
-            colour,
-            1,
-        )
+            frame = cv2.rectangle(
+                frame,
+                (x1, y1),
+                (x2, y2),
+                colour,
+                1,
+            )
 
     cv2.imshow("frame", frame)
 
